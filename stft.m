@@ -1,18 +1,42 @@
-function [tfr,norm2h] = stft(x,N,cas,h,Lh,downsamp,shift)
- 
- %x        : signal
- %N        : number of frequency bins
- %cas      : if 1, no assumption on h except it does not vanish at 0 
- %           if 2, use a filter with unit energy 
- %           if 3, use a filter with unit mean 
- %h        : the filter h used
- %Lh       : the filter is of length 2Lh+1
- %downsamp : the downsampling value between 1 and Lh.
- %shift    : the shift parameter, the value used for reconstruction are
- %           m*downsamp+shift (if downsamp = 1, shift =0)
- 
- %tfr      : short time Fourier transform
- %norm2h   : the L2 norm of the filter on it support
+function [tfr,norm2h] = stft(x,N,h,varargin)
+%STFT short time Fourier transform
+%   [TFR,norm2h] = stft(x,Nfft,h)
+%   x        : signal
+%   N        : number of frequency bins
+%   h        : the filter
+%
+%   --  List of possible name-value pair argument
+%   'cas'    : if 1, no assumption on h except it does not vanish at 0
+%              if 2, use a filter with unit energy
+%              if 3, use a filter with unit mean
+%              default is 1.
+%   'down'   : downsampling factor between 1 and floor(length(h)/2).
+%              default is 1.
+%   'shift'  : parameter used to shift the downsampling
+%              default is 0.
+%
+%   --  Output
+%   s        : the short time Fourier transform of x
+%   norm2h   : the L2 norm of the filter on it support
+
+defaultCas = 1;
+defaultDown = 1;
+defaultShift = 0;
+
+p = inputParser;
+addRequired(p,'x');
+addRequired(p,'N');
+addRequired(p,'h');
+addParameter(p,'cas',defaultCas);
+addParameter(p,'down',defaultDown);
+addParameter(p,'shift',defaultShift);
+parse(p,x,N,h,varargin{:});
+cas = p.Results.cas;
+downsamp = p.Results.down;
+shift = p.Results.shift;
+
+Lh = floor(length(h)/2);
+x = x(:);
  
  [xrow,xcol] = size(x);
  

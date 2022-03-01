@@ -1,15 +1,37 @@
-function [x] = istft(tfr,cas,Nsig,h,shift)
+function [x] = istft(tfr,h,varargin)
+%ISTFT inverse short time Fourier transform
+%   [x] = istft(s,h)
+%   tfr      : stft of x
+%   h        : the filter
+%
+%   --  List of possible name-value pair argument
+%   'cas'    : 1, no assumption on h except it does not vanish at 0
+%              2, use a filter with unit energy
+%              3, use a filter with unit mean
+%              default is 1.
+%   'len'    : length of the signal to be reconstructed.
+%              default is size(s, 2).
+%   'shift'  : parameter used to shift the downsampling
+%              default is 0.
+%
+%   --  Output
+%   x        : reconstruction from tfr
  
- %tfr  : STFT of signal x
- %cas  : if 1, no assumption on h except it does not vanish at 0 
- %       if 2, use a filter with unit energy 
- %       if 3, use a filter with unit mean
- %Nsig : length of the signal to be reconstructed
- %h    : filter
- %shift: the shift parameter
- 
- %x    : restored signal
- 
+defaultCas = 1;
+defaultLen = size(tfr, 2);
+defaultShift = 0;
+
+p = inputParser;
+addRequired(p,'tfr');
+addRequired(p,'h');
+addParameter(p,'cas',defaultCas);
+addParameter(p,'len',defaultLen);
+addParameter(p,'shift',defaultShift);
+parse(p,tfr,h,varargin{:});
+cas = p.Results.cas;
+Nsig = p.Results.len;
+shift = p.Results.shift;
+
  [N,xrow_down] = size(tfr);
  downsamp = floor(Nsig/xrow_down);
  
