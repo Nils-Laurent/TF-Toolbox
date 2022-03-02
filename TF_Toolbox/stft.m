@@ -26,9 +26,9 @@ defaultShift = 0;
 p = inputParser;
 addRequired(p,'x');
 addRequired(p,'N');
-addRequired(p,'h');
+addRequired(p,'h', valid_h); 
 addParameter(p,'cas',defaultCas);
-addParameter(p,'down',defaultDown);
+addParameter(p,'down',defaultDown); 
 addParameter(p,'shift',defaultShift);
 parse(p,x,N,h,varargin{:});
 cas = p.Results.cas;
@@ -37,6 +37,15 @@ shift = p.Results.shift;
 
 Lh = floor(length(h)/2);
 x = x(:);
+
+if (length(h) >= N)
+    error("window length too large : length(h) >= N");
+end
+
+if (downsamp > Lh)
+    error("downsampling factor too large : 'down' > floor(length(h)/2)");
+end
+
  
  [xrow,xcol] = size(x);
  
