@@ -26,7 +26,7 @@ defaultShift = 0;
 p = inputParser;
 addRequired(p,'x');
 addRequired(p,'N');
-addRequired(p,'h', valid_h); 
+addRequired(p,'h');
 addParameter(p,'cas',defaultCas);
 addParameter(p,'down',defaultDown); 
 addParameter(p,'shift',defaultShift);
