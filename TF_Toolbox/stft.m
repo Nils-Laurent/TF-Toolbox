@@ -1,6 +1,8 @@
 function [tfr,norm2h] = stft(x,N,h,varargin)
 %STFT short time Fourier transform
 %   [TFR,norm2h] = stft(x,Nfft,h)
+%
+% INPUTS:
 %   x        : signal
 %   N        : number of frequency bins
 %   h        : the filter
@@ -14,7 +16,7 @@ function [tfr,norm2h] = stft(x,N,h,varargin)
 %              default is 1.
 %   'shift'  : parameter used to shift the downsampling
 %              default is 0.
-%
+% OUTPUTS:
 %   --  Output
 %   s        : the short time Fourier transform of x
 %   norm2h   : the L2 norm of the filter on it support

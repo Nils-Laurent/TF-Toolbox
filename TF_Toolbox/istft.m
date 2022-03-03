@@ -1,6 +1,8 @@
 function [x] = istft(tfr,h,varargin)
 %ISTFT inverse short time Fourier transform
 %   [x] = istft(s,h)
+%
+% INPUTS:
 %   tfr      : stft of x
 %   h        : the filter
 %
@@ -14,7 +16,7 @@ function [x] = istft(tfr,h,varargin)
 %   'shift'  : parameter used to shift the downsampling
 %              default is 0.
 %
-%   --  Output
+% OUTPUTS:
 %   x        : reconstruction from tfr
  
 defaultCas = 1;

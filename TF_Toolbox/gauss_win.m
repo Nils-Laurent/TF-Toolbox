@@ -1,6 +1,8 @@
 function [g, Lh] = gauss_win(L, sigma_w, varargin)
 %GAUSS_WIN Gaussian window
 %   [g, Lh] = GAUSS_WIN(L, sigma_w)
+%
+% INPUTS:
 %   L        : samples per second
 %   sigma_w  : time spreading parameter
 %
@@ -8,7 +10,7 @@ function [g, Lh] = gauss_win(L, sigma_w, varargin)
 %   'prec'   : precision at which the window shoud be truncated
 %              default is 1E-3.
 %
-%   --  Output
+% OUTPUTS:
 %   g        : the gaussian window
 %   norm2h   : the L2 norm of g
 

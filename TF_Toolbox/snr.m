@@ -1,10 +1,12 @@
 function [snr_out] = snr(s,n)
 %SNR signal to noise ratio
 %   [snr_out] = SNR(s, n)
+%
+% INPUTS:
 %   s        : signal
 %   n        : noise
 %
-%   --  Output
+% OUTPUTS:
 %   snr_out  : output SNR
 
 if length(size(s)) == 2 && length(size(n)) == 2
