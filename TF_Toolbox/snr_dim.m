@@ -7,6 +7,7 @@ function Y = snr_dim(s,M,dim)
 %   s        : signal
 %   M        : matrix with variants of s
 %   dim      : dimonsion in M containing variants of s
+%              default is 1.
 %
 % OUTPUTS:
 %   Y        : matrix of output SNRs between s and (s - M)

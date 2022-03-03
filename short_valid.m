@@ -10,3 +10,6 @@ SV_downsamp();
 
 %% ridge detection
 SV_exridge();
+
+%% snr dim
+SV_snr_dim();
