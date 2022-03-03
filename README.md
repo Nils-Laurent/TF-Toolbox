@@ -3,14 +3,14 @@ Time frequency toolbox
 
 ## Potential functions to be implemented
 
-- [ ] STFT
-- [ ] STFT inverse
+- [x] STFT
+- [x] STFT inverse
 - [ ] SST2
 - [ ] SSTN
-- [ ] Gaussian window
-- [ ] Ridge detection
-- [ ] SNR
-- [ ] Approx SNR : Compute SNRs on a matrix of approximations
+- [x] Gaussian window
+- [x] Ridge detection
+- [x] SNR
+- [x] Approx SNR : Compute SNRs on a matrix of approximations
 
 ## Applications
 
