@@ -14,6 +14,7 @@ Nfft = 512;
 g = gauss_win(L, sigma_w);
 
 cas = 1;
+fprintf(" -- CAS = %u\n", cas);
 for downsamp=[1 4 8 16 32 64]
     s_vec = [0 1 2 10 20 40];
     for shift=s_vec
@@ -24,11 +25,11 @@ for downsamp=[1 4 8 16 32 64]
         [tfr,~] = stft(s,Nfft,g,'cas',cas,'down',downsamp,'shift',shift);
         [x] = istft(tfr, g,'cas',cas,'len',length(s),'shift',shift);
 
-        snr_out = snr(s, x - s);
-        if (snr_out > 250)
-            fprintf("[OK] snr_out=%f\n", snr_out);
+        EM = max(abs(x - s));
+        if (EM < 1E-12)
+            fprintf("[OK] max err = %d\n", EM);
         else
-            error("snr_out=%f\n", snr_out);
+            error("max err = %d\n", EM);
         end
     end
 end
@@ -36,25 +37,27 @@ end
 downsamp = 32;
 shift = 20;
 cas = 2;
+fprintf(" -- CAS = %u\n", cas);
 [tfr,~] = stft(s,Nfft,g,'cas',cas,'down',downsamp,'shift',shift);
 [x] = istft(tfr, g,'cas',cas,'len',length(s),'shift',shift);
 
-snr_out = snr(s, x - s);
-if (snr_out > 250)
-    fprintf("[OK] snr_out=%f\n", snr_out);
+EM = max(abs(x - s));
+if (EM < 1E-12)
+    fprintf("[OK] max err = %d\n", EM);
 else
-    error("snr_out=%f\n", snr_out);
+    error("max err = %d\n", EM);
 end
 
 cas = 3;
+fprintf(" -- CAS = %u\n", cas);
 [tfr,~] = stft(s,Nfft,g,'cas',cas,'down',downsamp,'shift',shift);
 [x] = istft(tfr, g,'cas',cas,'len',length(s),'shift',shift);
 
-snr_out = snr(s, x - s);
-if (snr_out > 250)
-    fprintf("[OK] snr_out=%f\n", snr_out);
+EM = max(abs(x - s));
+if (EM < 1E-12)
+    fprintf("[OK] max err = %d\n", EM);
 else
-    error("snr_out=%f\n", snr_out);
+    error("max err = %d\n", EM);
 end
 
 end
