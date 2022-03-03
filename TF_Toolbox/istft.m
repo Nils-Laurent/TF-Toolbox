@@ -7,9 +7,8 @@ function [x] = istft(tfr,h,varargin)
 %   h        : the filter
 %
 %   --  List of possible name-value pair argument
-%   'cas'    : 1, no assumption on h except it does not vanish at 0
-%              2, use a filter with unit energy
-%              3, use a filter with unit mean
+%   'cas'    : values 1, 2 and 3 respectively refers to
+%              equations (3), (6) and (9) in paper [1]
 %              default is 1.
 %   'len'    : length of the signal to be reconstructed.
 %              default is size(s, 2).
@@ -18,6 +17,12 @@ function [x] = istft(tfr,h,varargin)
 %
 % OUTPUTS:
 %   x        : reconstruction from tfr
+%
+% REFERENCES:
+% [1] S. Meignen and D.-H. Pham, “Retrieval of the modes of multi-
+% component signals from downsampled short-time Fourier transform,”
+% IEEE Trans. Signal Process., vol. 66, no. 23, pp. 6204–6215, Dec.
+% 2018.
  
 defaultCas = 1;
 defaultLen = size(tfr, 2);
@@ -52,21 +57,17 @@ shift = p.Results.shift;
  end
  
  if (cas == 2)
-  %case with periodization and with unit energy filters   
-  %the filter h is with unit energy on its support
-  Lh = (length(h)-1)/2; %h is supposed to be with odd length
+  Lh = (length(h)-1)/2;
   x = zeros(Nsig,1);
   for i = 1:Nsig   
    ind  = 1+(floor(((i-1)-Lh-shift)/downsamp):ceil(((i-1)+Lh+shift)/downsamp));
    ind = ind(((i-1)-downsamp*(ind-1)-shift >= -Lh)&((i-1)-downsamp*(ind-1)-shift <= Lh));
-   %we renormalize the filter so that it is with unit energy (on the
-   %samples corresponding to the downsampling)
+
    if (i > Lh)&&(i <= Nsig -Lh)
     x(i) = mean((tfr(:,ind).*exp(2*1i*pi*(0:N-1)'*((i-1)-downsamp*(ind-1)-shift)/N))*...
            h(Lh+1+(i-1)-downsamp*(ind-1)-shift))/norm(h(Lh+1+(i-1)-downsamp*(ind-1)-shift))^2;
    else
-    %we renormalize the filter so that it is with unit energy (on the
-    %samples corresponding to the downsampling)
+
     %To work well downsamp has to divide Nsig (cf paper)
     x(i) = mean((tfr(:,1+rem((ind-1)+xrow_down,xrow_down)).*exp(2*1i*pi*(0:N-1)'*((i-1)-downsamp*(ind-1)-shift)/N))...
                 *h(Lh+1+(i-1)-downsamp*(ind-1)-shift))/norm(h(Lh+1+(i-1)-downsamp*(ind-1)-shift))^2;     
@@ -75,9 +76,6 @@ shift = p.Results.shift;
  end
  
  if (cas == 3)
-  %case with periodization and with unit l1 norm filters   
-  %the filter h is with unit l1 norm
-  
   Lh = (length(h)-1)/2;
   x = zeros(Nsig,1);
   

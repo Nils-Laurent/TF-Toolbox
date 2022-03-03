@@ -8,9 +8,8 @@ function [tfr,norm2h] = stft(x,N,h,varargin)
 %   h        : the filter
 %
 %   --  List of possible name-value pair argument
-%   'cas'    : if 1, no assumption on h except it does not vanish at 0
-%              if 2, use a filter with unit energy
-%              if 3, use a filter with unit mean
+%   'cas'    : values 1, 2 and 3 respectively refers to
+%              equations (3), (6) and (9) in paper [1]
 %              default is 1.
 %   'down'   : downsampling factor between 1 and floor(length(h)/2).
 %              default is 1.
@@ -20,6 +19,12 @@ function [tfr,norm2h] = stft(x,N,h,varargin)
 %   --  Output
 %   s        : the short time Fourier transform of x
 %   norm2h   : the L2 norm of the filter on it support
+%
+% REFERENCES:
+% [1] S. Meignen and D.-H. Pham, “Retrieval of the modes of multi-
+% component signals from downsampled short-time Fourier transform,”
+% IEEE Trans. Signal Process., vol. 66, no. 23, pp. 6204–6215, Dec.
+% 2018.
 
 defaultCas = 1;
 defaultDown = 1;
