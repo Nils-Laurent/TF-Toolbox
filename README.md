@@ -13,8 +13,3 @@ Time frequency toolbox
 - Approx SNR : Compute SNRs on a matrix of approximations
 - Add noise : with specific input SNR
 - Noise level estimation
-
-## Possible applications
-
-- RRP RD
-- LCR
