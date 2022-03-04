@@ -1,19 +1,31 @@
-function [STFT,SST,VSST,omega,omega2] = sst2(s,sigma,Nfft,gamma)
+function [STFT,SST,omega] = sst2(s,sigma,Nfft,gamma)
+%SST2 computes the STFT of a signal and different versions of synchrosqueezing
+%   [STFT,SST,omega] = SST2(s,sigma,Nfft)
+%   [STFT,SST,omega] = SST2(s,sigma,Nfft,gamma)
+%
+% INPUTS:
+%   s     : Real or complex signal.
+%   sigma : The parameter sigma in the definition of the Gaussian window.
+%   Nfft  : Number of frequency bins.
+%   gamma : Threshold on the STFT for reassignment,
+%           default is 1E-6.
+%
+% OUTPUTS:
+%   STFT  : The short-time Fourier transform.
+%   SST   : Structure with vertical SST transforms for orders one and two.
+%           They are respectively given by
+%           SST.d1 and SST.d2
+%   omega : Structure with IF estimations for orders one and two.
+%           They are respectively given by
+%           omega.d1 and omega.d2
+%
+% REFERENCES:
+% [1] Behera, R., Meignen, S., & Oberlin, T. (2015). Theoretical Analysis
+% of the Second-order Synchrosqueezing Transform. To appear in ACHA
 
- %% sst2_new : computes the STFT of a signal and different versions of synchrosqueezing
- %
- % INPUTS:   
- %   s: real or complex signal
- %   sigma: the variance of the Gaussian window
- %   Nfft: number of frequency bins
- %   gamma: threshold on the STFT for reassignment
- % OUTPUTS:   
- %   STFT : the short-time Fourier transform
- %   SST  : standard synchrosqueezing
- %   VSST1: vertical second-order synchrosqueezing [1]
- % REFERENCES
- % [1] Behera, R., Meignen, S., & Oberlin, T. (2015). Theoretical Analysis
- % of the Second-order Synchrosqueezing Transform. To appear in ACHA
+if nargin == 3
+    gamma = 1E-6;
+end
  
  s = s(:);
  N = length(s);          
@@ -21,10 +33,7 @@ function [STFT,SST,VSST,omega,omega2] = sst2(s,sigma,Nfft,gamma)
  ft   = 1:Nfft;
  bt   = 1:N;
   
- prec = 10^(-3);
- L =  sigma*N;
- l = floor(L*sqrt(-log(prec)/pi))+1;
- g = amgauss(2*l+1,l+1,L);
+ [g, l] = gauss_win(N, sigma);
  
  % Window definition
   
@@ -37,12 +46,11 @@ function [STFT,SST,VSST,omega,omega2] = sst2(s,sigma,Nfft,gamma)
 
  % Initialization
  STFT  = zeros(Nfft,N);
- SST   = zeros(Nfft,N);
- VSST  = zeros(Nfft,N);
+ Y  = zeros(Nfft,N);
+ SST = struct('d1', Y, 'd2', Y);
+ omega = struct('d1', Y, 'd2', Y);
  
- omega  = zeros(Nfft,N);
  tau    = zeros(Nfft,N);
- omega2 = zeros(Nfft,N);
  phipp  = zeros(Nfft,N);
              
  %% Computes STFT and reassignment operators
@@ -66,7 +74,7 @@ function [STFT,SST,VSST,omega,omega2] = sst2(s,sigma,Nfft,gamma)
  	vgp = tmp(ft);
     
     % operator omega
-    omega(:,b) = N/Nfft*(ft-1)'-real(vgp/2/1i/pi./vg);    
+    omega.d1(:,b) = N/Nfft*(ft-1)'-real(vgp/2/1i/pi./vg);    
  	
     
     % STFT, window gpp
@@ -83,7 +91,7 @@ function [STFT,SST,VSST,omega,omega2] = sst2(s,sigma,Nfft,gamma)
     phipp(:,b) = 1/2/1i/pi*(vgpp.*vg-vgp.^2)./(vxg.*vgp-vxgp.*vg);
        
     %new omega2
-    omega2(:,b) = omega(:,b) - real(phipp(:,b)).*real(tau(:,b))...
+    omega.d2(:,b) = omega.d1(:,b) - real(phipp(:,b)).*real(tau(:,b))...
                               + imag(phipp(:,b)).*imag(tau(:,b)); 
 
 	% Storing STFT       
@@ -94,16 +102,16 @@ function [STFT,SST,VSST,omega,omega2] = sst2(s,sigma,Nfft,gamma)
  for b=1:N
     for eta=1:Nfft
         if abs(STFT(eta,b))> gamma
-           k = 1+round(Nfft/N*omega(eta,b));
+           k = 1+round(Nfft/N*omega.d1(eta,b));
             if (k >= 1) && (k <= Nfft)
              % original reassignment
-             SST(k,b) = SST(k,b) + STFT(eta,b);
+             SST.d1(k,b) = SST.d1(k,b) + STFT(eta,b);
             end
             %reassignment using new omega2
-            k = 1+round(Nfft/N*omega2(eta,b));
+            k = 1+round(Nfft/N*omega.d2(eta,b));
             if k>=1 && k<=Nfft
                 % second-order Vertical reassignment: VSST
-                VSST(k,b) = VSST(k,b) + STFT(eta,b);
+                SST.d2(k,b) = SST.d2(k,b) + STFT(eta,b);
             end 
         end
     end

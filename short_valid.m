@@ -13,3 +13,6 @@ SV_exridge();
 
 %% snr dim
 SV_snr_dim();
+
+%% sstn
+SV_SST();
