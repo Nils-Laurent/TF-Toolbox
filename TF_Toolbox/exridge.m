@@ -1,5 +1,5 @@
 function [Cs, Es] = exridge(TFR,jump,varargin)
-% EXRIDGE extracts the ridges of a multicomponent signal
+%EXRIDGE extracts the ridges of a multicomponent signal
 % [Cs, Es] = EXRIDGE(TFR,jump)
 % [Cs, Es] = EXRIDGE(TFR,jump,nr,clwin)
 %

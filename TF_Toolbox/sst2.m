@@ -1,4 +1,4 @@
-function [STFT,SST,omega] = sst2(s,sigma,Nfft,gamma)
+function [STFT,TFR] = sst2(s,sigma,Nfft,gamma)
 %SST2 computes the STFT of a signal and different versions of synchrosqueezing
 %   [STFT,SST,omega] = SST2(s,sigma,Nfft)
 %   [STFT,SST,omega] = SST2(s,sigma,Nfft,gamma)
@@ -12,12 +12,13 @@ function [STFT,SST,omega] = sst2(s,sigma,Nfft,gamma)
 %
 % OUTPUTS:
 %   STFT  : The short-time Fourier transform.
-%   SST   : Structure with vertical SST transforms for orders one and two.
-%           They are respectively given by
-%           SST.d1 and SST.d2
-%   omega : Structure with IF estimations for orders one and two.
-%           They are respectively given by
-%           omega.d1 and omega.d2
+%   TFR   : Structure containing multiple time frequency representations
+%           defined in [1]. Below list gives all available fields of the
+%           structure where <n> is equal to one or two:
+%           - TFR.SST<n> : n-th order SST.
+%           - TFR.omega<n>_hat : n-th order IF estimator.
+%           - TFR.q_hat : Chirp rate estimate.
+%           - TFR.tau : Groupe delay.
 %
 % REFERENCES:
 % [1] Behera, R., Meignen, S., & Oberlin, T. (2015). Theoretical Analysis
@@ -46,9 +47,9 @@ end
 
  % Initialization
  STFT  = zeros(Nfft,N);
- Y  = zeros(Nfft,N);
- SST = struct('d1', Y, 'd2', Y);
- omega = struct('d1', Y, 'd2', Y);
+ Z  = zeros(Nfft,N);
+ TFR = struct('SST1', Z, 'SST2', Z, 'omega1_hat', Z, 'omega2_hat', Z,...
+     'q_hat', Z, 'tau', Z);
  
  tau    = zeros(Nfft,N);
  phipp  = zeros(Nfft,N);
@@ -74,7 +75,7 @@ end
  	vgp = tmp(ft);
     
     % operator omega
-    omega.d1(:,b) = N/Nfft*(ft-1)'-real(vgp/2/1i/pi./vg);    
+    TFR.omega1_hat(:,b) = N/Nfft*(ft-1)'-real(vgp/2/1i/pi./vg);    
  	
     
     % STFT, window gpp
@@ -91,27 +92,31 @@ end
     phipp(:,b) = 1/2/1i/pi*(vgpp.*vg-vgp.^2)./(vxg.*vgp-vxgp.*vg);
        
     %new omega2
-    omega.d2(:,b) = omega.d1(:,b) - real(phipp(:,b)).*real(tau(:,b))...
-                              + imag(phipp(:,b)).*imag(tau(:,b)); 
+    TFR.omega2_hat(:,b) = TFR.omega1_hat(:,b) -...
+        real(phipp(:,b)).*real(tau(:,b)) +...
+        imag(phipp(:,b)).*imag(tau(:,b)); 
 
 	% Storing STFT       
     STFT(:,b) = vg.*exp(2*1i*pi*(ft-1)'*min(l,b-1)/Nfft);%renormalized so that it fits with recmodes
  end
+ 
+ TFR.q_hat = real(phipp);
+ TFR.tau = tau;
   
  %% reassignment step
  for b=1:N
     for eta=1:Nfft
         if abs(STFT(eta,b))> gamma
-           k = 1+round(Nfft/N*omega.d1(eta,b));
+           k = 1+round(Nfft/N*TFR.omega1_hat(eta,b));
             if (k >= 1) && (k <= Nfft)
              % original reassignment
-             SST.d1(k,b) = SST.d1(k,b) + STFT(eta,b);
+             TFR.SST1(k,b) = TFR.SST1(k,b) + STFT(eta,b);
             end
             %reassignment using new omega2
-            k = 1+round(Nfft/N*omega.d2(eta,b));
+            k = 1+round(Nfft/N*TFR.omega2_hat(eta,b));
             if k>=1 && k<=Nfft
                 % second-order Vertical reassignment: VSST
-                SST.d2(k,b) = SST.d2(k,b) + STFT(eta,b);
+                TFR.SST2(k,b) = TFR.SST2(k,b) + STFT(eta,b);
             end 
         end
     end

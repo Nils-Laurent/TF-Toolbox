@@ -1,5 +1,5 @@
-function [STFT,SST,omega] = sstn(s,sigma,Nfft,gamma)
-% SSTN computes the STFT of a signal and different versions of synchrosqueezing
+function [STFT,TFR] = sstn(s,sigma,Nfft,gamma)
+%SSTN computes the STFT of a signal and different versions of synchrosqueezing
 %   [STFT,SST,omega] = SSTN(s,sigma,Nfft)
 %   [STFT,SST,omega] = SSTN(s,sigma,Nfft,gamma)
 %
@@ -12,12 +12,13 @@ function [STFT,SST,omega] = sstn(s,sigma,Nfft,gamma)
 %
 % OUTPUTS:
 %   STFT  : The short-time Fourier transform.
-%   SST   : Structure with vertical SST transforms for orders one to four.
-%           They are respectively given by
-%           SST.d1, SST.d2, SST.d3 and SST.d4
-%   omega : Structure with IF estimations for orders one to four.
-%           They are respectively given by
-%           omega.d1, omega.d2, omega.d3 and omega.d4
+%   TFR   : Structure containing multiple time frequency representations
+%           defined in [1]. Below list gives all available fields of the
+%           structure where <n> is and order between one and four:
+%           - TFR.SST<n> : n-th order SST.
+%           - TFR.omega<n>_hat : n-th order IF estimator.
+%           - TFR.q_hat : Chirp rate estimate.
+%           - TFR.tau : Groupe delay.
 %
 % REFERENCES:
 % [1] D.-H. Pham and S. Meignen, “High-order synchrosqueezing transform for
@@ -45,8 +46,9 @@ gp  = -2*a*t0.*g;
 % Initialization
 STFT = zeros(Nfft,N);
 Y = zeros(Nfft,N);
-SST = struct('d1', Y, 'd2', Y, 'd3', Y, 'd4', Y);
-omega = struct('d1', Y, 'd2', Y, 'd3', Y, 'd4', Y);
+TFR = struct('SST1', Y, 'SST2', Y, 'SST3', Y, 'SST4', Y,...
+    'omega1_hat', Y, 'omega2_hat', Y, 'omega3_hat', Y, 'omega4_hat', Y,...
+    'q_hat', Y, 'tau', Y);
 
 tau2 = zeros(Nfft,N);
 tau3 = zeros(Nfft,N);
@@ -99,17 +101,19 @@ Y = zeros(Nfft,4,4);
     W4 = -1/2/1i/pi*(2*vg(:,1).*vg(:,3)+2*vg(:,2).^2+vg(:,1).*vgp(:,4) - vg(:,4).*vgp(:,1)+vg(:,2).*vgp(:,3) - vg(:,3).*vgp(:,2));
     
     %% operator omega
-    omega.d1(:,b) = ft'-real(vgp(:,1)/2/1i/pi./vg(:,1));
+    TFR.omega1_hat(:,b) = ft'-real(vgp(:,1)/2/1i/pi./vg(:,1));
     
     %% operator hat p: estimations of frequency modulation  
     %SST2 
     phi22p(:,b) = W2./Y(:,2,2);
-    omega.d2(:,b) = omega.d1(:,b) - real(phi22p(:,b).*tau2(:,b));
+    TFR.omega2_hat(:,b) = TFR.omega1_hat(:,b) - real(phi22p(:,b).*tau2(:,b));
         
     %SST3
     phi33p(:,b) = (W3.*Y(:,2,2)-W2.*Y(:,3,3))./(Y(:,4,3).*Y(:,2,2)-Y(:,3,2).*Y(:,3,3));   
     phi23p(:,b) = (W2./Y(:,2,2) - phi33p(:,b).*Y(:,3,2)./Y(:,2,2));
-    omega.d3(:,b) = omega.d1(:,b)-real(phi23p(:,b).*tau2(:,b))-real(phi33p(:,b).*tau3(:,b));
+    TFR.omega3_hat(:,b) = TFR.omega1_hat(:,b)-...
+        real(phi23p(:,b).*tau2(:,b))-...
+        real(phi33p(:,b).*tau3(:,b));
        
     %SST4      
     phi44p(:,b) =((Y(:,4,3).*Y(:,2,2)-Y(:,3,2).*Y(:,3,3)).*W4-(W3.*Y(:,2,2)-W2.*Y(:,3,3)).*(Y(:,5,4)+Y(:,5,3)-Y(:,5,2))+(W3.*Y(:,3,2)-W2.*Y(:,4,3)).*(Y(:,4,4)+Y(:,4,3)-Y(:,4,2)))...
@@ -118,38 +122,44 @@ Y = zeros(Nfft,4,4);
        -phi44p(:,b).*(Y(:,5,3).*Y(:,2,2)-Y(:,4,2).*Y(:,3,3))./(Y(:,4,3).*Y(:,2,2)-Y(:,3,2).*Y(:,3,3));
     phi24p(:,b) = W2./Y(:,2,2) - phi34p(:,b).*Y(:,3,2)./Y(:,2,2) - phi44p(:,b).*Y(:,4,2)./Y(:,2,2);
    
-    omega.d4(:,b) = omega.d1(:,b) - real(phi24p(:,b).*tau2(:,b))- real(phi34p(:,b).*tau3(:,b))- real(phi44p(:,b).*tau4(:,b));
+    TFR.omega4_hat(:,b) = TFR.omega1_hat(:,b) -...
+        real(phi24p(:,b).*tau2(:,b))-...
+        real(phi34p(:,b).*tau3(:,b))-...
+        real(phi44p(:,b).*tau4(:,b));
 
 	% Storing STFT    
     STFT(:,b) = vg(:,1).*(exp(2*1i*pi*(0:Nfft-1)'*min(l,b-1)/Nfft));   
  end
  
+ TFR.q_hat = real(phi22p);
+ TFR.tau = tau2;
+ 
  %% reassignment step
 for b=1:N
     for eta=1:Nfft
         if abs(STFT(eta,b))> gamma
-         k = 1+round(Nfft/N*omega.d1(eta,b));
+         k = 1+round(Nfft/N*TFR.omega1_hat(eta,b));
          if (k >= 1) && (k <= Nfft)
           % original reassignment
-          SST.d1(k,b) = SST.d1(k,b) + STFT(eta,b);
+          TFR.SST1(k,b) = TFR.SST1(k,b) + STFT(eta,b);
          end
          %reassignment using new omega2
-         k = 1+round(Nfft/N*omega.d2(eta,b));
+         k = 1+round(Nfft/N*TFR.omega2_hat(eta,b));
          if k>=1 && k<=Nfft
           % second-order reassignment: SST2
-          SST.d2(k,b) = SST.d2(k,b) + STFT(eta,b);
+          TFR.SST2(k,b) = TFR.SST2(k,b) + STFT(eta,b);
          end
          %reassignment using new omega3
-         k = 1+round(Nfft/N*omega.d3(eta,b));
+         k = 1+round(Nfft/N*TFR.omega3_hat(eta,b));
          if k>=1 && k<=Nfft
           % third-order reassignment: SST3
-          SST.d3(k,b) = SST.d3(k,b) + STFT(eta,b);
+          TFR.SST3(k,b) = TFR.SST3(k,b) + STFT(eta,b);
          end
          %reassignment using new omega4
-         k = 1+round(Nfft/N*omega.d4(eta,b));
+         k = 1+round(Nfft/N*TFR.omega4_hat(eta,b));
          if k>=1 && k<=Nfft
           % fourth-order reassignment: SST4
-          SST.d4(k,b) = SST.d4(k,b) + STFT(eta,b);
+          TFR.SST4(k,b) = TFR.SST4(k,b) + STFT(eta,b);
          end
         end
     end
