@@ -47,9 +47,8 @@ end
 
  % Initialization
  STFT  = zeros(Nfft,N);
- Z  = zeros(Nfft,N);
- TFR = struct('SST1', Z, 'SST2', Z, 'omega1_hat', Z, 'omega2_hat', Z,...
-     'q_hat', Z, 'tau', Z);
+ omega1  = zeros(Nfft,N);
+ omega2  = zeros(Nfft,N);
  
  tau    = zeros(Nfft,N);
  phipp  = zeros(Nfft,N);
@@ -75,7 +74,7 @@ end
  	vgp = tmp(ft);
     
     % operator omega
-    TFR.omega1_hat(:,b) = N/Nfft*(ft-1)'-real(vgp/2/1i/pi./vg);    
+    omega1(:,b) = N/Nfft*(ft-1)'-real(vgp/2/1i/pi./vg);
  	
     
     % STFT, window gpp
@@ -92,33 +91,36 @@ end
     phipp(:,b) = 1/2/1i/pi*(vgpp.*vg-vgp.^2)./(vxg.*vgp-vxgp.*vg);
        
     %new omega2
-    TFR.omega2_hat(:,b) = TFR.omega1_hat(:,b) -...
+    omega2(:,b) = omega1(:,b) -...
         real(phipp(:,b)).*real(tau(:,b)) +...
         imag(phipp(:,b)).*imag(tau(:,b)); 
 
 	% Storing STFT       
     STFT(:,b) = vg.*exp(2*1i*pi*(ft-1)'*min(l,b-1)/Nfft);%renormalized so that it fits with recmodes
  end
- 
- TFR.q_hat = real(phipp);
- TFR.tau = tau;
   
+  T1 = zeros(Nfft, N);
+  T2 = zeros(Nfft, N);
  %% reassignment step
  for b=1:N
     for eta=1:Nfft
         if abs(STFT(eta,b))> gamma
-           k = 1+round(Nfft/N*TFR.omega1_hat(eta,b));
+           k = 1+round(Nfft/N*omega1(eta,b));
             if (k >= 1) && (k <= Nfft)
              % original reassignment
-             TFR.SST1(k,b) = TFR.SST1(k,b) + STFT(eta,b);
+             T1(k,b) = T1(k,b) + STFT(eta,b);
             end
             %reassignment using new omega2
-            k = 1+round(Nfft/N*TFR.omega2_hat(eta,b));
+            k = 1+round(Nfft/N*omega2(eta,b));
             if k>=1 && k<=Nfft
                 % second-order Vertical reassignment: VSST
-                TFR.SST2(k,b) = TFR.SST2(k,b) + STFT(eta,b);
+                T2(k,b) = T2(k,b) + STFT(eta,b);
             end 
         end
     end
  end
+
+ TFR = struct('SST1', T1, 'SST2', T2,...
+     'omega1_hat', omega1, 'omega2_hat', omega2,...
+     'q_hat', real(phipp), 'tau', tau);
 end
