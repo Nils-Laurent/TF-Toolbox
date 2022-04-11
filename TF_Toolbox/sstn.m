@@ -1,4 +1,4 @@
-function [STFT,TFR] = sstn(s,sigma,Nfft,gamma)
+function [STFT,TFR] = sstn(s,sigma,Nfft,varargin)
 %SSTN computes the STFT of a signal and different versions of synchrosqueezing
 %   [STFT,SST,omega] = SSTN(s,sigma,Nfft)
 %   [STFT,SST,omega] = SSTN(s,sigma,Nfft,gamma)
@@ -25,9 +25,14 @@ function [STFT,TFR] = sstn(s,sigma,Nfft,gamma)
 % multicomponent signals analysis - with an application to gravitational-wave signal,”
 % IEEE Transac tions on Signal Processing, vol. 65, pp. 3168–3178, June 2017.
 
-if nargin == 3
-    gamma = 1E-6;
-end
+defaultGamma = 1E-6;
+p = inputParser;
+addRequired(p,'s');
+addRequired(p,'sigma');
+addRequired(p,'Nfft');
+addOptional(p,'gamma',defaultGamma);
+parse(p,s,sigma,Nfft,varargin{:});
+gamma = p.Results.gamma;
 
 s = s(:);
 

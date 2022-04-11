@@ -1,4 +1,4 @@
-function [STFT,TFR] = sst2(s,sigma,Nfft,gamma)
+function [STFT,TFR] = sst2(s,sigma,Nfft,varargin)
 %SST2 computes the STFT of a signal and different versions of synchrosqueezing
 %   [STFT,SST,omega] = SST2(s,sigma,Nfft)
 %   [STFT,SST,omega] = SST2(s,sigma,Nfft,gamma)
@@ -24,9 +24,14 @@ function [STFT,TFR] = sst2(s,sigma,Nfft,gamma)
 % [1] Behera, R., Meignen, S., & Oberlin, T. (2015). Theoretical Analysis
 % of the Second-order Synchrosqueezing Transform. To appear in ACHA
 
-if nargin == 3
-    gamma = 1E-6;
-end
+defaultGamma = 1E-6;
+p = inputParser;
+addRequired(p,'s');
+addRequired(p,'sigma');
+addRequired(p,'Nfft');
+addOptional(p,'gamma',defaultGamma);
+parse(p,s,sigma,Nfft,varargin{:});
+gamma = p.Results.gamma;
  
  s = s(:);
  N = length(s);          
