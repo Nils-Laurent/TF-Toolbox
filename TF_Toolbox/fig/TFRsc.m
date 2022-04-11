@@ -3,36 +3,43 @@ function TFRsc(varargin)
 p = inputParser;
 
 if nargin == 1
-  p.addRequired(p, 'TFR');
-  parse(p, varargin);
+  addRequired(p, 'TFR');
+  parse(p, varargin{:});
   TFR = p.Results.TFR;
   XV = 1:size(TFR, 2);
   YV = 1:size(TFR, 1);
 
   TFRsc(XV, YV, TFR, "", "");
+  return;
 end
 
-p.addRequired(p, 'xVec');
-p.addRequired(p, 'yVec');
-p.addRequired(p, 'TFR');
-p.addOptional(p, 'xunit', "time");
-p.addOptional(p, 'yunit', "frequency");
-p.addParameter(p, 'flipCBar', 1);
-p.addParameter(p, 'axisFSZ', 18);
-p.addParameter(p, 'labelFSZ', 18);
-p.addParameter(p, 'squareSZ', 500);
+addRequired(p, 'xVec');
+addRequired(p, 'yVec');
+addRequired(p, 'TFR');
+addOptional(p, 'xunit', "time", @(x) 1 > 0);
+addOptional(p, 'yunit', "frequency", @(x) 1 > 0);
+addParameter(p, 'flipCBar', 1);
+addParameter(p, 'axisFSZ', 18);
+addParameter(p, 'labelFSZ', 18);
+addParameter(p, 'squareSZ', 500);
 
-parse(p, varargin);
+parse(p, varargin{:});
 r = p.Results;
 
-if flipCBar
+if sum(sum(abs(imag(r.TFR)))) > 0
+  TFR = abs(r.TFR);
+else
+  TFR = r.TFR;
+end
+
+if r.flipCBar
     cbar = flipud(gray);
 else
     cbar = gray;
 end
 
 figure;
-imagesc(r.xVec, r.Yvec, r.TFR);
+imagesc(r.xVec, r.yVec, TFR);
 axis xy;
 colormap(cbar);
 ax = gca;
