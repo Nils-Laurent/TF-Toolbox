@@ -1,7 +1,7 @@
 function [STFT,TFR] = sstn(s,sigma,Nfft,varargin)
 %SSTN computes the STFT of a signal and different versions of synchrosqueezing
-%   [STFT,SST,omega] = SSTN(s,sigma,Nfft)
-%   [STFT,SST,omega] = SSTN(s,sigma,Nfft,gamma)
+%   [STFT,TFR] = SSTN(s,sigma,Nfft)
+%   [STFT,TFR] = SSTN(s,sigma,Nfft,gamma)
 %
 % INPUTS:
 %   s     : Real or complex signal.

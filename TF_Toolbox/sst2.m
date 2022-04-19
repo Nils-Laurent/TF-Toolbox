@@ -1,7 +1,7 @@
 function [STFT,TFR] = sst2(s,sigma,Nfft,varargin)
 %SST2 computes the STFT of a signal and different versions of synchrosqueezing
-%   [STFT,SST,omega] = SST2(s,sigma,Nfft)
-%   [STFT,SST,omega] = SST2(s,sigma,Nfft,gamma)
+%   [STFT,TFR] = SST2(s,sigma,Nfft)
+%   [STFT,TFR] = SST2(s,sigma,Nfft,gamma)
 %
 % INPUTS:
 %   s     : Real or complex signal.
