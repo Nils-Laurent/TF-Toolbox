@@ -1,7 +1,7 @@
 function [y, noise] = add_noise(x, SNR_in, varargin)
 %ADD_NOISE add noise to x such that the input SNR is SNR_in
-%   [y] = add_noise(x, SNR_in)
-%   [y] = add_noise(x, SNR_in, n)
+%   [y, noise] = add_noise(x, SNR_in)
+%   [y, noise] = add_noise(x, SNR_in, n)
 %
 % INPUTS:
 %   x        : signal
@@ -21,7 +21,8 @@ function [y, noise] = add_noise(x, SNR_in, varargin)
 %
 % OUTPUTS:
 %   --  Output
-%   y        : Noisy signal.
+%   y        : noisy signal.
+%   noise    : noise added to the signal.
 
 L = length(x);
 defaultN = [];
