@@ -16,12 +16,22 @@ end
 addRequired(p, 'xVec');
 addRequired(p, 'yVec');
 addRequired(p, 'TFR');
-addOptional(p, 'xunit', "time", @(x) 1 > 0);
-addOptional(p, 'yunit', "frequency", @(x) 1 > 0);
 addParameter(p, 'flipCBar', 1);
 addParameter(p, 'axisFSZ', 18);
 addParameter(p, 'labelFSZ', 18);
 addParameter(p, 'squareSZ', 500);
+addParameter(p, 'nfig', []);
+addOptional(p, 'xunit', "time", @(x) 1 > 0);
+addOptional(p, 'yunit', "frequency", @(x) 1 > 0);
+
+
+if nargin > 4
+  Index = find(strcmp(p.Parameters,varargin{4}), 1);
+  if ~isempty(Index)
+    TFRsc(varargin{1:3}, "time", "frequency", varargin{4:end});
+    return;
+  end
+end
 
 parse(p, varargin{:});
 r = p.Results;
@@ -38,7 +48,11 @@ else
     cbar = gray;
 end
 
-figure;
+if sum(size(r.nfig) > 0)
+  figure(r.nfig);
+else
+  figure;
+end
 imagesc(r.xVec, r.yVec, TFR);
 axis xy;
 colormap(cbar);

@@ -1,4 +1,4 @@
-function [y] = add_noise(x, SNR_in, varargin)
+function [y, noise] = add_noise(x, SNR_in, varargin)
 %ADD_NOISE add noise to x such that the input SNR is SNR_in
 %   [y] = add_noise(x, SNR_in)
 %   [y] = add_noise(x, SNR_in, n)
@@ -56,15 +56,18 @@ r.n = r.n(:);
 
 if SNR_in == inf
     y = x(:);
+    noise = zeros(size(y));
     return;
 end
 
 if SNR_in == -inf
     y = r.n(:);
+    noise = y;
     return;
 end
 
 Scale = sqrt(sum(abs(x).^2)/sum(abs(r.n).^2)*10^(-SNR_in/10));
 y = x + Scale*r.n;
+noise = r.n;
 end
 
