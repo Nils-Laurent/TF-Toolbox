@@ -1,4 +1,4 @@
-function [y, noise] = add_noise(x, SNR_in, varargin)
+function [y, noise, Scale] = add_noise(x, SNR_in, varargin)
 %ADD_NOISE add noise to x such that the input SNR is SNR_in
 %   [y, noise] = add_noise(x, SNR_in)
 %   [y, noise] = add_noise(x, SNR_in, n)
@@ -42,10 +42,13 @@ if (r.imag == true && r.real == true)
 end
 
 if (sum(size(r.n)) > 0)
-    % r.n = r.n
+  %% noise is already provided
+  % r.n = r.n
 elseif (r.imag == true)
+  %% imag flag is set
   r.n = randn(1, L) + 1i*randn(1, L);
-elseif (r.real == true) || (sum(abs(imag(x))) > 0)
+elseif (r.real == true) || (sum(abs(imag(x))) == 0)
+  %% real flag is set or signal real
   r.n = randn(1, L);
 else
   r.n = randn(1, L) + 1i*randn(1, L);
